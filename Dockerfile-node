@@ -1,0 +1,26 @@
+from node:16-slim
+
+# Set working directory.
+WORKDIR /home/appuser
+
+# Install dependencies.
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    npm install -g npm@latest && \
+    npm install -g serve
+
+# Install Javascript dependencies and build.
+COPY *.json /home/appuser/
+RUN npm install --production
+
+COPY . /home/appuser/
+RUN npm run build
+
+RUN useradd --create-home appuser && \
+    chown -R appuser:appuser /home/appuser
+
+USER appuser
+
+EXPOSE 80
+
+CMD serve -l 80 -s build
