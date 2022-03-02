@@ -2,10 +2,9 @@ FROM python:3.9-slim
 
 # Add the ZScaler Root CA
 WORKDIR /usr
-COPY zscaler.cer .
-RUN openssl x509 -inform PEM -in zscaler.cer -out ./local/share/ca-certificates/zscaler.crt & \
-    update-ca-certificates & \
-    pip config set global.cert ./local/share/ca-certificates/zscaler.crt
+COPY cacert.pem ./local/share/ca-certificates/cacert.crt
+RUN update-ca-certificates & \
+    pip config set global.cert ./local/share/ca-certificates/cacert.crt
 
 # Update pip.
 RUN python -m pip install --upgrade pip
@@ -46,7 +45,7 @@ USER appuser
 WORKDIR /home/appuser
 
 #Add the zscaler cert to pip
-RUN pip config set global.cert /usr/local/share/ca-certificates/zscaler.crt
+RUN pip config set global.cert /usr/local/share/ca-certificates/cacert.crt
 
 # Copy and install requirement file from repo.
 COPY --chown=appuser requirements.txt requirements.txt
