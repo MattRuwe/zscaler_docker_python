@@ -2,7 +2,7 @@ FROM python:3.9-slim
 
 # Add the ZScaler Root CA
 WORKDIR /usr/local/share/ca-certificates
-RUN python3 -c "from urllib.request import urlretrieve; urlretrieve('https://curl.haxx.se/ca/cacert.pem', 'cacert.pem')"
+RUN python3 -c "from urllib.request import urlretrieve; urlretrieve('http://curl.haxx.se/ca/cacert.pem', 'cacert.pem')"
 COPY zscaler.pem .
 RUN cat zscaler.pem >> cacert.pem && \
     rm zscaler.pem && \
