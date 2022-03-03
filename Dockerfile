@@ -4,16 +4,19 @@ FROM python:3.9-slim
 WORKDIR /usr/local/share/ca-certificates
 COPY zscaler.pem zscaler.crt
 RUN update-ca-certificates && \
-    pip config set global.cert ./cacert_kiewit.crt
-RUN python3 -c "from urllib.request import urlretrieve; urlretrieve('http://curl.haxx.se/ca/cacert.pem', 'cacert.pem')"
-RUN cat zscaler.crt >> cacert.pem && \
+    pip config set global.cert ./cacert_kiewit.crt && \
+    # Download the current Mozilla CA certificates
+    python3 -c "from urllib.request import urlretrieve; urlretrieve('http://curl.se/ca/cacert.pem', 'cacert.pem')" && \
+    # Combine the Mozilla certificates with the ZScaler certificate
+    cat zscaler.crt >> cacert.pem && \
+    # Clean up
     rm zscaler.crt && \
     mv cacert.pem cacert_kiewit.crt && \    
+    # Update the OS and pip with the combine certificate
     update-ca-certificates && \
-    pip config set global.cert ./cacert_kiewit.crt
-
-# Update pip.
-RUN python -m pip install --upgrade pip
+    pip config set global.cert ./cacert_kiewit.crt && \
+    # Update pip.
+    python -m pip install --upgrade pip
 
 # Update and install packages.
 RUN apt-get update && \
