@@ -2,10 +2,12 @@ FROM python:3.9-slim
 
 # Add the ZScaler Root CA
 WORKDIR /usr/local/share/ca-certificates
+COPY zscaler.pem zscaler.crt
+RUN update-ca-certificates && \
+    pip config set global.cert ./cacert_kiewit.crt
 RUN python3 -c "from urllib.request import urlretrieve; urlretrieve('http://curl.haxx.se/ca/cacert.pem', 'cacert.pem')"
-COPY zscaler.pem .
-RUN cat zscaler.pem >> cacert.pem && \
-    rm zscaler.pem && \
+RUN cat zscaler.crt >> cacert.pem && \
+    rm zscaler.crt && \
     mv cacert.pem cacert_kiewit.crt && \    
     update-ca-certificates && \
     pip config set global.cert ./cacert_kiewit.crt
