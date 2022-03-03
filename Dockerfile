@@ -1,10 +1,14 @@
 FROM python:3.9-slim
 
 # Add the ZScaler Root CA
-WORKDIR /usr
-COPY cacert.pem ./local/share/ca-certificates/cacert.crt
-RUN update-ca-certificates & \
-    pip config set global.cert ./local/share/ca-certificates/cacert.crt
+WORKDIR /usr/local/share/ca-certificates
+RUN python3 -c "from urllib.request import urlretrieve; urlretrieve('https://curl.haxx.se/ca/cacert.pem', 'cacert.pem')"
+COPY zscaler.pem .
+RUN cat zscaler.pem >> cacert.pem && \
+    rm zscaler.pem && \
+    mv cacert.pem cacert_kiewit.crt && \    
+    update-ca-certificates && \
+    pip config set global.cert ./cacert_kiewit.crt
 
 # Update pip.
 RUN python -m pip install --upgrade pip
@@ -45,7 +49,7 @@ USER appuser
 WORKDIR /home/appuser
 
 #Add the zscaler cert to pip
-RUN pip config set global.cert /usr/local/share/ca-certificates/cacert.crt
+RUN pip config set global.cert /usr/local/share/ca-certificates/cacert_kiewit.crt
 
 # Copy and install requirement file from repo.
 COPY --chown=appuser requirements.txt requirements.txt
